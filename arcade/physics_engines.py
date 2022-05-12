@@ -1,5 +1,6 @@
 """
 Physics engines for top-down or platformers.
+MODIFIED ARCADE ENGINE FOR PLAYER AND ENEMIES
 """
 # pylint: disable=too-many-arguments, too-many-locals, too-few-public-methods
 
@@ -10,14 +11,14 @@ from arcade import (Sprite, SpriteList, check_for_collision,
                     check_for_collision_with_lists, get_distance)
 
 
-def _circular_check(player: Sprite, walls: List[SpriteList]):
+def _circular_check(entity: Sprite, walls: List[SpriteList]):
     """
     This is a horrible kludge to 'guess' our way out of a collision
     Returns:
 
     """
-    original_x = player.center_x
-    original_y = player.center_y
+    original_x = entity.center_x
+    original_y = entity.center_y
 
     vary = 1
     while True:
@@ -33,20 +34,22 @@ def _circular_check(player: Sprite, walls: List[SpriteList]):
 
         for my_item in try_list:
             x, y = my_item
-            player.center_x = x
-            player.center_y = y
-            check_hit_list = check_for_collision_with_lists(player, walls)
-            # print(f"Vary {vary} ({self.player_sprite.center_x} {self.player_sprite.center_y}) "
+            entity.center_x = x
+            entity.center_y = y
+            check_hit_list = check_for_collision_with_lists(entity, walls)
+            # print(f"Vary {vary} ({player.center_x} {player.center_y}) "
             #       f"= {len(check_hit_list)}")
             if len(check_hit_list) == 0:
                 return
+            entity._stop()
         vary *= 2
 
 
 def _move_sprite(moving_sprite: Sprite, walls: List[SpriteList], ramp_up: bool) -> List[Sprite]:
 
     # See if we are starting this turn with a sprite already colliding with us.
-    if len(check_for_collision_with_lists(moving_sprite, walls)) > 0:
+    checked_sprites = check_for_collision_with_lists(moving_sprite, walls)
+    if len(checked_sprites) > 0:
         _circular_check(moving_sprite, walls)
 
     original_x = moving_sprite.center_x
@@ -64,7 +67,6 @@ def _move_sprite(moving_sprite: Sprite, walls: List[SpriteList], ramp_up: bool) 
         rotating_hit_list = check_for_collision_with_lists(moving_sprite, walls)
 
         if len(rotating_hit_list) > 0:
-
             max_distance = (moving_sprite.width + moving_sprite.height) / 2
 
             # Resolve any collisions by this weird kludge
@@ -243,7 +245,6 @@ class PhysicsEngineSimple:
         """
 
         return _move_sprite(self.player_sprite, self.walls, ramp_up=False)
-
 
 class PhysicsEnginePlatformer:
     """
@@ -440,3 +441,30 @@ class PhysicsEnginePlatformer:
         # print(f"Update - {end_time - start_time:7.4f}\n")
 
         return complete_hit_list
+
+class PhysicForEnemies:
+    def __init__(self, enemy_list: Union[SpriteList, Iterable[SpriteList]], walls: Union[SpriteList, Iterable[SpriteList]]):
+        super().__init__()
+        """
+        Create a simple physics engine.
+        """
+
+        if isinstance(walls, SpriteList):
+            self.walls = [walls]
+        elif isinstance(walls, list):
+            self.walls = list(walls)
+        else:
+            raise ValueError("Unsupported wall type. Must be SpriteList or list of SpriteLists")
+
+        self.enemy_list = enemy_list
+
+    def update(self):
+        """
+        Move everything and resolve collisions.
+
+        :Returns: SpriteList with all sprites contacted. Empty list if no sprites.
+        """
+        for enemy in self.enemy_list:
+            _move_sprite(enemy, self.walls, ramp_up=False)
+
+        return
