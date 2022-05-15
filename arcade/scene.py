@@ -89,7 +89,7 @@ class Scene:
         :param Sprite sprite: The `Sprite` to add.
         """
         if name in self.name_mapping:
-            self.name_mapping[name].append(sprite)
+            self.name_mapping[name].append()
         else:
             new_list = SpriteList()
             new_list.append(sprite)
@@ -100,6 +100,7 @@ class Scene:
         name: str,
         use_spatial_hash: bool = False,
         sprite_list: Optional[SpriteList] = None,
+        visible: bool = True
     ) -> None:
         """
         Add a SpriteList to the scene with the specified name.
@@ -112,9 +113,10 @@ class Scene:
         :param str name: The name to give the SpriteList.
         :param bool use_spatial_hash: Wether or not to use spatial hash if creating a new SpriteList.
         :param SpriteList sprite_list: The SpriteList to add, optional.
+        :param bool visible: Make sprite list visible or not, default is visible
         """
         if not sprite_list:
-            sprite_list = SpriteList(use_spatial_hash=use_spatial_hash)
+            sprite_list = SpriteList(use_spatial_hash=use_spatial_hash, visible=visible)
         self.name_mapping[name] = sprite_list
         self.sprite_lists.append(sprite_list)
 
