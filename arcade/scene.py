@@ -74,7 +74,7 @@ class Scene:
 
         raise KeyError(f"Scene does not contain a layer named: {key}")
 
-    def add_sprite(self, name: str, sprite: Sprite) -> None:
+    def add_sprite(self, name: str, sprite: Sprite, visible: bool = True) -> None:
         """
         Add a Sprite to a SpriteList in the Scene with the specified name.
 
@@ -87,11 +87,12 @@ class Scene:
 
         :param str name: The name of the `SpriteList` to add to or create.
         :param Sprite sprite: The `Sprite` to add.
+        :param bool visible: Set sprite visibility, default true - visible.
         """
         if name in self.name_mapping:
-            self.name_mapping[name].append()
+            self.name_mapping[name].append(sprite)
         else:
-            new_list = SpriteList()
+            new_list = SpriteList(visible=visible)
             new_list.append(sprite)
             self.add_sprite_list(name=name, sprite_list=new_list)
 
